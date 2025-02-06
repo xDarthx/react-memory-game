@@ -25,12 +25,12 @@ function shuffleArray(array) {
   return array.sort(() => Math.random() - 0.5);
 }
 
-function Card({ image }) {
+function Card({ image, onClick }) {
   return (
     <div className='card-body'>
-      <div className='card'>
-        <img id={image.id} src={image.src} alt="GIF" />
-      </div>
+        <div className='card'>
+            <img onClick={() => onClick(image.id)} id={image.id} src={image.src} alt="GIF" />
+        </div>
     </div>
   );
 }
@@ -58,22 +58,40 @@ function WorldTime({ timezone = "UTC" }) {
 
 function App() {
   const [shuffledImages, setShuffledImages] = useState([]);
+  const [clickedImages, setClickedImages] = useState({}); 
+  const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
 
   useEffect(() => {
-    setShuffledImages(shuffleArray([...images])); // Shuffle images on mount
+    setShuffledImages(shuffleArray([...images])); 
   }, []);
+
+  const cardClick = (imageId) => {
+    if(clickedImages[imageId]) {
+      if(score > highScore){
+        setHighScore(score);
+      }
+      setScore(0);
+      setClickedImages({});
+      setShuffledImages(shuffleArray([...images]));
+    } else {
+      setScore(1 + score);
+      setClickedImages({...clickedImages, [imageId]: true});
+      setShuffledImages(shuffleArray([...images]));
+    }
+  };
 
   return (
     <>
       <WorldTime timezone="America/New_York" /> {/* Pass timezone as a prop */}
       <hr />
       <div className='score-box'>
-        <h1 id='high-score'>High Score: </h1>
-        <h1 id="score">Current Score: </h1> 
+        <h1 id='high-score'>High Score: {highScore}</h1>
+        <h1 id="score">Current Score: {score}</h1> 
       </div>
       <div className='grid-box'>
         {shuffledImages.slice(0, 8).map((image) => (
-          <Card key={image.id} image={image} />
+          <Card key={image.id} image={image} onClick={cardClick} />
         ))}
       </div>
     </>
